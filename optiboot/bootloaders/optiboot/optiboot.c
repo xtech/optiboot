@@ -267,7 +267,7 @@
 unsigned const int __attribute__((section(".version"))) 
 optiboot_version = 256*(OPTIBOOT_MAJVER + OPTIBOOT_CUSTOMVER) + OPTIBOOT_MINVER;
 
-
+
 #include <inttypes.h>
 #include <avr/io.h>
 #include <avr/pgmspace.h>
@@ -898,9 +898,31 @@ int main(void) {
       putch(SIGNATURE_2);
     }
     else if (ch == STK_LEAVE_PROGMODE) { /* 'Q' */
-      // Adaboot no-wait mod
-      watchdogConfig(WATCHDOG_16MS);
+      // Disable the watchdog
+      watchdogConfig(WATCHDOG_OFF);
       verifySpace();
+      putch(STK_OK);
+      // Go to app start
+	  // Note that appstart_vec is defined so that this works with either
+	  // real or virtual boot partitions.
+	   __asm__ __volatile__ (
+	    // Jump to 'save' or RST vector
+#ifdef VIRTUAL_BOOT_PARTITION
+	    // full code version for virtual boot partition
+	    "ldi r30,%[rstvec]\n"
+	    "clr r31\n"
+	    "ijmp\n"::[rstvec] "M"(appstart_vec)
+#else
+#ifdef RAMPZ
+	    // use absolute jump for devices with lot of flash
+	    "jmp 0\n"::
+#else
+	    // use rjmp to go around end of flash to address 0
+	    // it uses fact that optiboot_version constant is 2 bytes before end of flash
+	    "rjmp optiboot_version+2\n"
+#endif //RAMPZ
+#endif //VIRTUAL_BOOT_PARTITION
+	  );
     }
     else {
       // This covers the response to commands like STK_ENTER_PROGMODE
