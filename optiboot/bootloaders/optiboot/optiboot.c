@@ -668,7 +668,7 @@ int main(void) {
 #endif // soft_uart
 
   // Set up watchdog to trigger after 1s
-  watchdogConfig(WATCHDOG_1S);
+  watchdogConfig(WATCHDOG_2S);
 
 #if (LED_START_FLASHES > 0) || defined(LED_DATA_FLASH) || defined(LED_START_ON)
   /* Set LED pin as output */
