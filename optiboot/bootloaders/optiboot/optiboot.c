@@ -620,7 +620,13 @@ int main(void) {
 #endif //RAMPZ
 #endif //VIRTUAL_BOOT_PARTITION
 	  );
+      } else {
+	    // We really want to bootload. Set the watchdog here
+	    watchdogConfig(WATCHDOG_2S);
       }
+  } else {
+	  // User requested reboot - disable watchdog
+	  watchdogConfig(WATCHDOG_OFF);
   }
 
 #if LED_START_FLASHES > 0
@@ -668,7 +674,7 @@ int main(void) {
 #endif // soft_uart
 
   // Set up watchdog to trigger after 1s
-  watchdogConfig(WATCHDOG_2S);
+  //watchdogConfig(WATCHDOG_OFF);
 
 #if (LED_START_FLASHES > 0) || defined(LED_DATA_FLASH) || defined(LED_START_ON)
   /* Set LED pin as output */
@@ -926,6 +932,7 @@ int main(void) {
     }
     else {
       // This covers the response to commands like STK_ENTER_PROGMODE
+      watchdogConfig(WATCHDOG_2S);
       verifySpace();
     }
     putch(STK_OK);
